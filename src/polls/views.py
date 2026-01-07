@@ -14,7 +14,7 @@ class ChoiceViewSet(ModelViewSet):
     serializer_class = ChoiceSerializer
 
 
-## Unused
+## Unused, for direct creation using url paramters
 def test(request):
     template = loader.get_template('page.html')
     return HttpResponse(template.render())
