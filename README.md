@@ -9,7 +9,6 @@ Ensure following is installed
 - poetry
   - Can be installed for MAC using `brew install pipx` and then `pipx install poetry`
 
-
 ```shell
 poetry install
 poetry run pre-commit install
@@ -28,6 +27,7 @@ The application then can be accessed at http://127.0.0.1:8000/
 ```shell
 docker compose up
 ```
+The application then can be accessed at http://127.0.0.1:8000/
 
 ## Dependencies Used
 - Django 
