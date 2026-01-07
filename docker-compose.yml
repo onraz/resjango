@@ -1,0 +1,18 @@
+services:
+  web:
+    image: webapp:latest # Specifies the name and tag for the built image
+    build:
+      context: .           # Looks for a Dockerfile in the current directory
+    ports:
+      - "8000:8000"        # Maps host port 8000 to container port 8000
+    depends_on:
+      - cache
+    environment:
+      # Environment variable to configure your application to use the cache service
+      MEMCACHED_HOST: cache:11211
+
+  # The Memcached service
+  cache:
+    image: memcached:latest
+    ports:
+     - "11211:11211"

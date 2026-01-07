@@ -1,7 +1,10 @@
+# Python image used for all stages
+ARG PYTHON_IMAGE=python:3.14-slim
+
 # =========================
 # Stage 1: Builder
 # =========================
-FROM python:3.14-slim AS builder
+FROM $PYTHON_IMAGE AS builder
 
 # Prevent Python from writing pyc files and buffering stdout
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -27,7 +30,7 @@ COPY src ./src
 # =========================
 # Stage 2: Runtime
 # =========================
-FROM python:3.14-slim AS runtime
+FROM $PYTHON_IMAGE AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -57,6 +60,3 @@ EXPOSE 8000
 
 # Development (Django runserver)
 CMD ["python", "src/manage.py", "runserver", "0.0.0.0:8000"]
-
-# ---- Production alternative (recommended) ----
-# CMD ["gunicorn", "--bind", "0.0.0.0:8000", "your_project_name.wsgi:application"]
