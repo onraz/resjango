@@ -1,7 +1,37 @@
 from django.http import HttpResponse
 from django.template import loader
+from .models import Question, Choice
+from .serializers import QuestionSerializer, ChoiceSerializer
+from rest_framework.viewsets import ModelViewSet
 
 # Create your views here.
+class QuestionViewSet(ModelViewSet):
+    queryset = Question.objects.all()
+    serializer_class = QuestionSerializer
+
+class ChoiceViewSet(ModelViewSet):
+    queryset = Choice.objects.all()
+    serializer_class = ChoiceSerializer
+
+
+## Unused
 def test(request):
     template = loader.get_template('page.html')
     return HttpResponse(template.render())
+
+def index(request):
+    latest_question_list = Question.objects.order_by("-pub_date")[:5]
+    output = ", ".join([q.question_text for q in latest_question_list])
+    return HttpResponse(output)
+
+def detail(request, question_id):
+    return HttpResponse("You're looking at question %s." % question_id)
+
+
+def results(request, question_id):
+    response = "You're looking at the results of question %s."
+    return HttpResponse(response % question_id)
+
+
+def vote(request, question_id):
+    return HttpResponse("You're voting on question %s." % question_id)
