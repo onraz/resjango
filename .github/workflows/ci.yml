@@ -36,3 +36,6 @@ jobs:
 
     - name: Run tests
       run: poetry run pytest
+
+    - name: Build Docker image (no push)
+      run: docker build . application

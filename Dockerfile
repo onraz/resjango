@@ -1,30 +1,62 @@
-# --- Stage 1: Builder ---
-# Use a specific Python base image
+# =========================
+# Stage 1: Builder
+# =========================
 FROM python:3.14-slim AS builder
 
-# Install Poetry using pip
-RUN pip install "poetry"
+# Prevent Python from writing pyc files and buffering stdout
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Install Poetry
+RUN pip install --no-cache-dir poetry
 
 WORKDIR /app
 
-# Copy only the configuration files to leverage Docker layer caching
+# Copy dependency definitions first for better layer caching
 COPY pyproject.toml poetry.lock ./
 
-# Install dependencies, but do not install the project itself yet (--no-root)
-RUN poetry install --no-root
+# Configure Poetry to create venv inside project
+RUN poetry config virtualenvs.in-project true
 
-# Add the virtual environment to the PATH
-ENV PATH="/app/.venv/bin:$PATH"
+# Install dependencies (no project code yet)
+RUN poetry install --no-root --no-interaction --no-ansi
 
-# Copy the actual source code from your flat layout
-# The '.' copies everything from your local context to the container's WORKDIR
-COPY src .
+# Copy application source
+COPY src ./src
 
-# Expose the port Django runs on
+# =========================
+# Stage 2: Runtime
+# =========================
+FROM python:3.14-slim AS runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/app/.venv/bin:$PATH"
+
+# Create a non-root user
+RUN groupadd --system appuser \
+    && useradd --system --gid appuser --home /app appuser
+
+WORKDIR /app
+
+# Copy virtualenv and app from builder
+COPY --from=builder /app /app
+
+# Fix ownership
+RUN chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
+# Expose Django port
 EXPOSE 8000
 
-# "poetry run" can be used if poetry is installed in the runtime image,
-# otherwise you can just use "python" and ensure the application is in the python path
-CMD ["poetry", "run", "python", "manage.py", "runserver", "0.0.0.0:8000"]
-# TODO: For production, use Gunicorn instead:
-# CMD ["gunicorn", "--bind", "0.0.0.0:8000", "your_project_name.wsgi"]
+# =========================
+# Runtime command
+# =========================
+
+# Development (Django runserver)
+CMD ["python", "src/manage.py", "runserver", "0.0.0.0:8000"]
+
+# ---- Production alternative (recommended) ----
+# CMD ["gunicorn", "--bind", "0.0.0.0:8000", "your_project_name.wsgi:application"]
