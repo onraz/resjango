@@ -36,6 +36,7 @@ line-length = 120
 
 [tool.mypy]
 plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+mypy_path = "$MYPY_CONFIG_FILE_DIR/src"
 
 [tool.django-stubs]
 django_settings_module = "restjango.settings"
