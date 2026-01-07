@@ -43,3 +43,4 @@ django_settings_module = "restjango.settings"
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "restjango.settings"
+pythonpath = ["src"]
